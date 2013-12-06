@@ -1,11 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
- *
- * @author Benajmin
+ * @author Benjamin
+ * @Dec 5 2013
  */
 
 import java.io.*;
@@ -71,21 +66,14 @@ public class Node {
 	}
     }
     
+    public void activation(){
+	this.a = 1 / (1 + Math.exp(-1 * this.a));
+    }
+    
     public void updataA(){
 	this.a = this.activation(this.input);
     }
     
-    public double getAlpha(){
-	return 0.5;
-    }
-    
-    public double getA(){
-	return this.a;
-    }
-    
-    public double getDelta(){
-	return this.delta;
-    }
     
     public void addInput(double value){
 	input += value;
@@ -95,12 +83,8 @@ public class Node {
 	this.previousLayer = previousLayer;
     }
     
-    public void setError(double error){
-	this.error = error;
-    }
-    
-    public void activation(){
-	this.a = 1 / (1 + Math.exp(-1 * this.a));
+    public void setError(double target){
+	this.error = this.a - target;
     }
     
     public double[] getWeight(){
@@ -116,5 +100,17 @@ public class Node {
     }
     public double getBiaWeight(){
 	return this.biaWeight;
+    }
+    
+    public double getAlpha(){
+	return 0.5;
+    }
+    
+    public double getA(){
+	return this.a;
+    }
+    
+    public double getDelta(){
+	return this.delta;
     }
 }

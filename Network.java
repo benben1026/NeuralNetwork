@@ -1,11 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
- *
- * @author Benajmin
+ * @author Benjamin
+ * @Dec 5 2013
  */
 
 public class Network {
@@ -55,6 +50,9 @@ public class Network {
 	Node[] temp = this.outputLayer;
 	for(int i = this.layer.length - 1; i >= 0; i--){
 	    for(int j = 0; j < this.layer[i]; j++){
+		if(i == this.layer.length - 1){
+		    temp[j].setError(target);
+		}
 		temp[j].backProcess();
 	    }
 	    temp = temp[0].getPreviousLayer();
