@@ -4,30 +4,38 @@
  */
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.Scanner;
 
 public class NeuralNetwork {
-    public static void main(String[] args) throws FileNotFoundException, IOException {
+    public static void main(String[] args){
 	int max_iteration = Integer.parseInt(args[3]);
-	int small_small_mode = Integer.parseInt(args[4]);
+	int small_sample_mode = Integer.parseInt(args[4]);
 	
-	int[] fileInform = findInformOfFile(args[0]);
+	int[] fileInform = {};
+	try{
+	    fileInform = findInformOfFile(args[0]);
+	}catch(Exception e){
+	    System.out.println("File not Found");
+	}
+	
 	int numOfRecord = fileInform[0];
 	int numOfTrainSet = (int)Math.floor(0.7 * numOfRecord);
 	int numOfSmallSet = (int)Math.floor(0.1 * numOfTrainSet);
 	int numOfEvaluateSet = numOfRecord - numOfTrainSet;
 	
-	System.out.println("numOfRecord = " + numOfRecord + " numOfTrainSet = " + numOfTrainSet + " numOfSmallSet = " + numOfSmallSet + " numOfEvaluateSet = " + numOfEvaluateSet);
-	
-	//System.out.println(fileInform[0] + " " + fileInform[1]);
 	DataSet[] smallSet = new DataSet[10];      //10 sets of data to train the NN
 	DataSet evaluationSet;
 	
 	File dataset_file = new File(args[0]);
 	File answer_file = new File(args[1]);
-	Scanner dataset  = new Scanner(dataset_file);
-	Scanner answer = new Scanner(answer_file);
+	Scanner dataset = null;
+	Scanner answer = null;
+	try {
+	    dataset = new Scanner(dataset_file);
+	    answer = new Scanner(answer_file);
+	} catch (FileNotFoundException ex) {
+	    System.out.println("File not Found");
+	}
 	
 	String[] tempToken;
 	int[] inputData = new int[fileInform[1]];
@@ -35,14 +43,14 @@ public class NeuralNetwork {
 	    smallSet[i] = new DataSet(fileInform[1], numOfSmallSet);
 	    for(int j = 0; j < numOfSmallSet; j++){
 		tempToken = dataset.nextLine().split(" ");
-		try{
+//		try{
 		    for(int k = 0; k < tempToken.length; k++){
 			inputData[k] = Integer.parseInt(tempToken[k]);
 		    }
-		}catch(NumberFormatException e){
-		    System.out.println("Data missing");
-		    smallSet[i].invalidDataSet();
-		}
+//		}catch(NumberFormatException e){
+//		    System.out.println("Data missing");
+//		    smallSet[i].invalidDataSet();
+//		}
 		smallSet[i].addRecord(inputData, answer.nextInt());
 	    }
 	}
@@ -60,41 +68,29 @@ public class NeuralNetwork {
 	    evaluationSet.addRecord(inputData, answer.nextInt());
 	}
 	
-//	showData(smallSet[0]);
-//	showData(smallSet[1]);
-//	showData(smallSet[2]);
-//	showData(smallSet[3]);
-//	showData(smallSet[4]);
-//	showData(smallSet[5]);
-//	showData(smallSet[6]);
-//	showData(smallSet[7]);
-//	showData(smallSet[8]);
-//	showData(smallSet[9]);
-//	System.out.println();
-//	showData(evaluationSet);
-	
-	int[] layer = {30, 30, 30, 30, 10, 1};
+	int[] layer = {30, 20, 6, 1};
 	Network net = new Network(layer);
-	double error = 0;
-	double accuracy = 0;
+	double error = 0.0;
+	double error2 = 0.0;
+	double accuracy = 0.0;
+	double all_accuracy = 0.0;
+	double max_accuracy = 0.0;
+	double allAccuracy = 0.0;
+	int time = 0;
+	String buffer = "";
+	String networkLayer = "";
 	
+//net.showNetwork();
+//int[] temp = {1,0,1,1,1,0,1,1,1,0,0,1,1,1,0,0,1,1,0,1,0,2,1,0,1,0,0,0,2,2};
+//System.out.println("new_Output = " + net.process(temp));
 	for(int iteration = 0; iteration < max_iteration; iteration ++){
-	    for(int testSet = 0; testSet < 10; testSet ++){
 		for(int trainSet = 0; trainSet < 10; trainSet ++){
-		    if(trainSet != testSet){
 			for(int i = 0; i < smallSet[trainSet].getNumOfRecord(); i++){
+//showData(smallSet[trainSet]);
 			    net.process(smallSet[trainSet].getData(i));
 			    net.backPropagation(smallSet[trainSet].getAnswer(i));
 			}
-		    }
 		}
-		for(int i = 0; i < smallSet[testSet].getNumOfRecord(); i++){
-		    double output = net.process(smallSet[testSet].getData(i));
-		    output = output >= 0.5 ? 1 : 0;
-		    //System.out.println("Error = " + Math.abs(output - smallSet[testSet].getAnswer(i)));
-		}
-		//System.out.println();
-	    }
 
 	    error = 0.0;
 	    for(int i = 0; i < evaluationSet.getNumOfRecord(); i++){
@@ -102,46 +98,42 @@ public class NeuralNetwork {
 		output = output >= 0.5 ? 1 : 0;
 		error += Math.abs(output - evaluationSet.getAnswer(i));
 	    }
-	    double newAccuracy = 1 - (error / evaluationSet.getNumOfRecord());
-	    /*
-	    if(newAccuracy < accuracy){
-		System.out.println("Accuracy = " + newAccuracy);
+	    accuracy = 1 - (error / evaluationSet.getNumOfRecord());
+	    
+	    error2 = 0.0;
+	    for(int j = 0; j < smallSet.length; j++){
+		for(int i = 0; i < smallSet[j].getNumOfRecord(); i++){
+		    double output = net.process(evaluationSet.getData(i));
+		    output = output >= 0.5 ? 1 : 0;
+		    error2 += Math.abs(output - evaluationSet.getAnswer(i));
+		}
+	    }
+	    
+	    if(accuracy > max_accuracy){
+		max_accuracy = accuracy;
+		allAccuracy = 1 - ((error + error2) / fileInform[0]);
+		buffer = net.toString();
+	    }
+	    if(max_accuracy > 0.8){
 		break;
 	    }
-	    */
-	    accuracy = newAccuracy;
-	    System.out.print("Iteration = " + iteration);
-	    System.out.println(" Accuracy = " + accuracy);
+	    //System.out.print("Iteration = " + iteration);
+	    //System.out.print(" Accuracy = " + accuracy);
+	    //System.out.println(" AllAccuracy = " + (1 - ((error + error2) / 1600)));
+	    
 	}
-//	for(int i = 0; i < max_iteration; i++){
-//	    dataset = new Scanner(dataset_file);
-//	    answer = new Scanner(answer_file);
-//	    while(dataset.hasNextLine()){
-//		datasetLine = dataset.nextLine();
-//		datasetToken = datasetLine.split(" ");
-//		inputData = new int[datasetToken.length];
-//		for(int j = 0; j < datasetToken.length; j++){
-//		    inputData[j] = Integer.parseInt(datasetToken[j]);
-//		}
-//		target = answer.nextInt();
-//		output = net.process(inputData);
-//		net.backPropagation(target);
-//		output = output >= 0.5 ? 1 : 0;
-//		System.out.println(target - output);
-//	    }
-//	}
 	
-	/*
-	//net.showNetwork();
-	int[] input = {1,2,3};
-	double output = net.process(input);
-	System.out.println(output);
-	for(int i = 0; i < 10 ; i++){
-	    net.backPropagation(1.0);
-	    output = net.process(input);
-	    System.out.println(output);
+	for(int i = 0; i < layer.length; i++){
+	    networkLayer += layer[i] + " ";
 	}
-	*/
+	System.out.println(allAccuracy + "\n" + networkLayer + "\n" + buffer);
+//	PrintStream f = null;
+//	try {
+//	    f = new PrintStream(args[2]);
+//	} catch (FileNotFoundException ex) {
+//	    System.out.println("File not Found");
+//	}
+//	f.println(allAccuracy + "\n" + networkLayer + "\n" + buffer);
     }
     
     public static int[] findInformOfFile(String filename) throws FileNotFoundException, IOException{
@@ -177,5 +169,16 @@ public class NeuralNetwork {
 	    }
 	    System.out.println();
 	
+    }
+    
+    public static int evaluate(Network net, DataSet input){
+	double error = 0.0;
+	for(int j = 0; j < input.getNumOfRecord(); j++){
+	    double output = net.process(input.getData(j));
+	    output = output >= 0.5 ? 1 : 0;
+	    error += Math.abs(output - input.getAnswer(j));
+	}
+	int t =  input.getNumOfRecord() - (int)error;
+	return t;
     }
 }

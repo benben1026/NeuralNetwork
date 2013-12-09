@@ -58,6 +58,7 @@ public class Node {
 	    this.delta = this.error * this.a * (1 - this.a);
 	}else{
 	    double sum = 0;
+	    this.biaWeight = this.biaWeight - this.getAlpha() * this.a * this.delta;
 	    for(int i = 0; i < this.nextLayer.length; i++){
 		this.weight[i] = this.weight[i] - this.getAlpha() * this.a * this.nextLayer[i].getDelta();
 		sum += this.weight[i] * this.nextLayer[i].delta;
@@ -71,9 +72,12 @@ public class Node {
     }
     
     public void updataA(){
-	this.a = this.activation(this.input);
+	this.a = this.activation(this.input + (this.bia * this.biaWeight));
     }
     
+    public void initialInput(){
+	this.input = 0;
+    }
     
     public void addInput(double value){
 	input += value;
@@ -103,11 +107,15 @@ public class Node {
     }
     
     public double getAlpha(){
-	return 0.5;
+	return 0.05;
     }
     
     public double getA(){
 	return this.a;
+    }
+    
+    public double getInput(){
+	return this.input;
     }
     
     public double getDelta(){
