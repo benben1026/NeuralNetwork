@@ -18,6 +18,7 @@ public class Node {
     private int numOfNextLayer;
     private double error;
     private double delta;
+    private double alpha = 0.0;
     
     public Node(Node[] nextLayer){
 	this.nextLayer = nextLayer;
@@ -36,6 +37,7 @@ public class Node {
 	for(int i = 0; i < numOfNextLayer; i++){
 	    this.weight[i]  = ran.nextDouble() - 0.5;
 	}
+	this.alpha = 0.05;
 	this.error = 0.0;
 	this.delta = 0.0;
     }
@@ -91,6 +93,10 @@ public class Node {
 	this.error = this.a - target;
     }
     
+    public void setAlpha(double value){
+	this.alpha = value;
+    }
+    
     public double[] getWeight(){
 	return this.weight;
     }
@@ -107,7 +113,7 @@ public class Node {
     }
     
     public double getAlpha(){
-	return 0.05;
+	return this.alpha;
     }
     
     public double getA(){

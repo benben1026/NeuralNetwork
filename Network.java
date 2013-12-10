@@ -79,6 +79,24 @@ public class Network {
 	}
     }
 
+    public void setAlpha(double value){
+	for (int i = 0; i < this.inputLayer.length; i++) {
+	    this.inputLayer[i].setAlpha(value);
+	}
+	Node[] temp = this.inputLayer;
+	for (int i = 0; i < layer.length; i++) {
+	    for (int j = 0; j < this.layer[i]; j++) {
+		temp[j].setAlpha(value);
+	    }
+	    if (temp[0].getNextLayer() != null) {
+		temp = temp[0].getNextLayer();
+	    }
+	}
+    }
+    
+    public double getAlpha(){
+	return this.inputLayer[0].getAlpha();
+    }
     public void showNetwork() {
 	Node[] temp = this.inputLayer;
 	for (int i = 0; i < this.layer.length; i++) {
@@ -113,9 +131,11 @@ public class Network {
 	    output += in_sym + this.layer[i] + " " + out_sym + this.layer[i + 1] + "\n";
 	    for (int j = 0; j < this.layer[i + 1]; j++) {
 		for(int k = 0; k < this.layer[i]; k++){
-		    output += df.format(temp[k].getWeight()[j]) + " ";
+		    //output += df.format(temp[k].getWeight()[j]) + " ";
+		    output += temp[k].getWeight()[j] + " ";
 		}
-		output += df.format(temp[0].getNextLayer()[j].getBiaWeight()) + "\n";
+		//output += df.format(temp[0].getNextLayer()[j].getBiaWeight()) + "\n";
+		output += temp[0].getNextLayer()[j].getBiaWeight() + "\n";
 	    }
 	    temp = temp[0].getNextLayer();
 	}
